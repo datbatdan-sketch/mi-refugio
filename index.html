@@ -112,20 +112,19 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .hug-sent{font-size:13px;color:rgba(255,200,80,0.5);margin-top:14px;min-height:20px;}
 
 /* ── HAPPY PLACE ── */
-#screen-happy{background:linear-gradient(180deg,#001428,#00233d);}
-.happy-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 32px;}
-.happy-sub{font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:16px;padding-left:4px;}
-.place-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.place-card{border-radius:20px;padding:14px;height:140px;display:flex;flex-direction:column;justify-content:flex-end;cursor:pointer;font-family:inherit;transition:transform 0.15s;position:relative;overflow:hidden;border:none;}
-.place-card:active{transform:scale(0.97);}
-.p-lbl{font-size:13px;color:#fff;font-weight:700;position:relative;z-index:2;text-shadow:0 1px 6px rgba(0,0,0,0.6);}
-.p-sub{font-size:10px;color:rgba(255,255,255,0.7);margin-top:2px;position:relative;z-index:2;}
-.card-lake{background:linear-gradient(160deg,#0a1628,#1a5080,#ff8c3a);}
-.card-cathedral{background:linear-gradient(160deg,#080510,#1e1030,#2a1840);}
-.card-rainbow{background:linear-gradient(160deg,#060418,#1a1050,#ff44cc,#ffcc00);}
-.card-yorkie{background:#2a1500;position:relative;}
-.card-yorkie .yk-img{position:absolute;inset:0;background-image:url('https://i.ibb.co/NnpsrByX/PHOTO-2026-03-29-20-58-27.jpg');background-size:cover;background-position:center top;border-radius:20px;}
-.card-yorkie .yk-grad{position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(0,0,0,0.6));border-radius:20px;}
+#screen-happy{background:#000;position:relative;}
+.happy-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.5s ease-in-out;}
+.happy-slide.active{opacity:1;}
+.happy-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.0) 40%,rgba(0,0,0,0.6) 100%);z-index:1;}
+.happy-caption{position:absolute;bottom:40px;left:0;right:0;text-align:center;z-index:2;padding:0 32px;}
+.happy-caption-title{font-size:18px;color:#fff;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,0.6);}
+.happy-caption-sub{font-size:13px;color:rgba(255,255,255,0.6);margin-top:4px;}
+.happy-dots{position:absolute;bottom:100px;left:0;right:0;display:flex;justify-content:center;gap:8px;z-index:2;}
+.happy-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.3);border:none;cursor:pointer;transition:all 0.3s;padding:0;}
+.happy-dot.active{background:#fff;transform:scale(1.3);}
+.happy-back{position:absolute;top:20px;left:20px;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.2);color:#fff;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;font-family:inherit;z-index:3;}
+.happy-heart{position:absolute;font-size:22px;animation:htUp 5s ease-in infinite;z-index:2;}
+@keyframes htUp{0%{opacity:0;transform:translateY(0) scale(0.5);}20%{opacity:1;}100%{opacity:0;transform:translateY(-200px) scale(1.1);}}
 
 /* SCENE OVERLAY */
 #scene-overlay{position:fixed;inset:0;z-index:800;display:none;flex-direction:column;}
@@ -191,18 +190,6 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
   <div class="ov-title">Someone is thinking of you</div>
   <div class="ov-msg">Right now, in this moment, you are loved. You are not alone. 💛</div>
   <button class="ov-close" onclick="closeOverlay()">I feel it ✨</button>
-</div>
-
-<!-- SCENE OVERLAY -->
-<div id="scene-overlay">
-  <div id="scene-bg" class="scene-bg"></div>
-  <button class="scene-back" onclick="closeScene()">‹</button>
-  <div class="scene-dots" id="scene-dots"></div>
-  <div class="scene-footer">
-    <div class="scene-title-txt" id="scene-title"></div>
-    <div class="scene-sub-txt" id="scene-sub"></div>
-    <div class="scene-tap-txt">Tap anywhere to cycle scenes</div>
-  </div>
 </div>
 
 <!-- HOME -->
@@ -315,32 +302,12 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 
 <!-- HAPPY PLACE -->
 <div class="screen" id="screen-happy">
-  <div class="scr-hdr"><button class="back-btn" onclick="show('home')">‹</button><span class="scr-title">My happy place</span></div>
-  <div class="happy-body">
-    <div class="happy-sub">Tap a scene · tap again to cycle</div>
-    <div class="place-grid">
-      <button class="place-card card-lake" onclick="openScene('lake')">
-        <div><div class="p-lbl">🌊 Lake Michigan</div><div class="p-sub">Waves & golden hour</div></div>
-      </button>
-      <button class="place-card card-cathedral" onclick="openScene('cathedral')">
-        <div><div class="p-lbl">🏛 Cathedral</div><div class="p-sub">Stillness & light</div></div>
-      </button>
-      <button class="place-card card-rainbow" onclick="openScene('rainbow')">
-        <svg style="position:absolute;inset:0;width:100%;height:100%;" viewBox="0 0 160 140" fill="none">
-          <path d="M-5 135 Q80 -30 165 135" stroke="#ff4444" stroke-width="8" fill="none" opacity="0.6"/>
-          <path d="M0 135 Q80 -18 160 135" stroke="#ff8800" stroke-width="7" fill="none" opacity="0.6"/>
-          <path d="M5 135 Q80 -6 155 135" stroke="#ffcc00" stroke-width="7" fill="none" opacity="0.6"/>
-          <path d="M10 135 Q80 6 150 135" stroke="#44cc44" stroke-width="6" fill="none" opacity="0.6"/>
-          <path d="M15 135 Q80 18 145 135" stroke="#4488ff" stroke-width="6" fill="none" opacity="0.6"/>
-          <path d="M20 135 Q80 30 140 135" stroke="#8844ff" stroke-width="5" fill="none" opacity="0.6"/>
-        </svg>
-        <div><div class="p-lbl">🌈 Rainbow sky</div><div class="p-sub">After every storm</div></div>
-      </button>
-      <button class="place-card card-yorkie" onclick="openScene('yorkie')">
-        <div class="yk-img"></div><div class="yk-grad"></div>
-        <div><div class="p-lbl">🐾 Lady Ginger</div><div class="p-sub">Your little love</div></div>
-      </button>
-    </div>
+  <button class="happy-back" onclick="closeHappy()">‹</button>
+  <div id="happy-slides"></div>
+  <div class="happy-dots" id="happy-dots"></div>
+  <div class="happy-caption">
+    <div class="happy-caption-title" id="happy-caption-title"></div>
+    <div class="happy-caption-sub" id="happy-caption-sub"></div>
   </div>
 </div>
 </div>
@@ -360,7 +327,7 @@ window.triggerHugEffect=()=>{document.getElementById('hug-overlay').classList.ad
 
 <script>
 // NAV
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');if(id==='breathe')initBreathe();if(id==='daily')loadDaily();if(id==='affirm')renderA();}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');if(id==='breathe')initBreathe();if(id==='daily')loadDaily();if(id==='affirm')renderA();if(id==='happy')initHappy();}
 window.show=show;
 
 // BREATHE
@@ -508,139 +475,78 @@ function prevA(){aIdx=(aIdx-1+affirmations.length)%affirmations.length;renderA()
 function toggleFav(){favs.has(aIdx)?favs.delete(aIdx):favs.add(aIdx);renderA();}
 window.nextA=nextA;window.prevA=prevA;window.toggleFav=toggleFav;
 
-// HAPPY PLACE SCENES
-const scenes={
-  lake:{title:'Lake Michigan',slides:[
-    {sub:'Golden hour — the city at peace',bg:'linear-gradient(180deg,#0a1628,#12306a,#c04a00,#ff8c2a)',extra:'sunset'},
-    {sub:'Purple dusk over the water',bg:'linear-gradient(180deg,#080620,#180840,#601860,#c03870)',extra:'dusk'},
-    {sub:'Still blue dawn, Chicago awakens',bg:'linear-gradient(180deg,#020408,#041020,#062848,#0a4a80)',extra:'dawn'}
-  ]},
-  cathedral:{title:'A cathedral at peace',slides:[
-    {sub:'Candlelight. Stillness. God is here.',bg:'linear-gradient(180deg,#060408,#120a04,#1e1206,#2a1a08)',color:'#c87820'},
-    {sub:'Sacred violet light through glass',bg:'linear-gradient(180deg,#040210,#0a0628,#180a48,#280e60)',color:'#9060e0'},
-    {sub:'Rose candlelight, a prayer for you',bg:'linear-gradient(180deg,#080010,#180028,#300044,#480060)',color:'#d040a0'}
-  ]},
-  rainbow:{title:'Rainbow sky',slides:[
-    {sub:'After every storm, colour returns',bg:'linear-gradient(180deg,#080c1a,#10204a,#1a4070,#3a6090)',rain:true},
-    {sub:'A promise written across the sky',bg:'linear-gradient(180deg,#100818,#281030,#482050,#703060)',rain:false},
-    {sub:'Light breaking through after the rain',bg:'linear-gradient(180deg,#0a0c08,#141e10,#224a1a,#3a7028)',rain:false}
-  ]},
-  yorkie:{title:'Lady Ginger 🐾',slides:[
-    {sub:'Your Yorkshire princess 👑',photo:'https://i.ibb.co/NnpsrByX/PHOTO-2026-03-29-20-58-27.jpg',icon:'👑'},
-    {sub:'Fashion icon — pink socks & all 🧦',photo:'https://i.ibb.co/97k7cc8/PHOTO-2025-10-08-18-53-52.jpg',icon:'🧦'},
-    {sub:'Easter shenanigans 🐰',photo:'https://i.ibb.co/QFjRPTpR/PHOTO-2025-07-06-22-02-04.jpg',icon:'🐰'}
-  ]}
-};
-let curScene=null,curSlide=0,rainInt=null;
+// HAPPY PLACE SLIDESHOW
+const slides=[
+  {img:'images/165106-truebsee-5337646_1280.jpg',title:'Lake & water',sub:'Be still. Let the water hold you.'},
+  {img:'images/timhill-lincoln-market-square-and-cathedral-8844590_1280.jpg',title:'Lincoln Cathedral',sub:'Stillness, grace and sacred beauty.'},
+  {img:'images/biancamentil-landscape-1192669_1280.jpg',title:'Rainbow sky',sub:'After every storm, colour returns.'},
+  {img:'images/PHOTO-2026-03-29-20-58-27.jpg',title:'Lady Ginger 🐾',sub:'Your Yorkshire princess 👑',hearts:true},
+  {img:'images/PHOTO-2025-10-08-18-53-52.jpg',title:'Lady Ginger 🐾',sub:'Fashion icon — pink socks & all 🧦',hearts:true},
+  {img:'images/PHOTO-2025-07-06-22-02-04.jpg',title:'Lady Ginger 🐾',sub:'Easter shenanigans 🐰',hearts:true}
+];
+let happyIdx=0,happyTimer=null,happyRunning=false;
 
-function openScene(id){
-  curScene=id;curSlide=0;
-  document.getElementById('scene-overlay').classList.add('show');
-  document.getElementById('scene-overlay').onclick=e=>{if(!e.target.closest('.scene-back')&&!e.target.closest('.s-dot'))nextSlide();};
-  renderScene();
-}
-window.openScene=openScene;
-
-function nextSlide(){clearInterval(rainInt);curSlide=(curSlide+1)%scenes[curScene].slides.length;renderScene();}
-
-function renderScene(){
-  clearInterval(rainInt);
-  const s=scenes[curScene];const sl=s.slides[curSlide];
-  const bg=document.getElementById('scene-bg');
-  bg.innerHTML='';bg.style.background=sl.bg||'#000';
-  document.getElementById('scene-title').textContent=s.title;
-  document.getElementById('scene-sub').textContent=sl.sub;
-  const dots=document.getElementById('scene-dots');dots.innerHTML='';
-  s.slides.forEach((_,i)=>{const d=document.createElement('button');d.className='s-dot'+(i===curSlide?' active':'');d.onclick=e=>{e.stopPropagation();curSlide=i;renderScene();};dots.appendChild(d);});
-  if(curScene==='lake') buildLake(bg,sl);
-  if(curScene==='cathedral') buildCathedral(bg,sl);
-  if(curScene==='rainbow') buildRainbow(bg,sl);
-  if(curScene==='yorkie') buildYorkie(bg,sl);
+function initHappy(){
+  happyIdx=0;happyRunning=true;
+  const wrap=document.getElementById('happy-slides');
+  wrap.innerHTML='';
+  slides.forEach((s,i)=>{
+    const div=document.createElement('div');
+    div.className='happy-slide'+(i===0?' active':'');
+    div.style.backgroundImage="url('"+s.img+"')";
+    div.id='slide-'+i;
+    wrap.appendChild(div);
+    // hearts for Ginger slides
+    if(s.hearts){
+      ['25%|52%|0s','64%|48%|2s','45%|44%|4s'].forEach(pos=>{
+        const[l,b,d]=pos.split('|');
+        const h=document.createElement('div');
+        h.className='happy-heart';h.textContent='💛';
+        h.style.cssText='left:'+l+';bottom:'+b+';animation-delay:'+d+';';
+        div.appendChild(h);
+      });
+    }
+  });
+  const overlay=document.createElement('div');overlay.className='happy-overlay';wrap.appendChild(overlay);
+  buildDots();
+  updateCaption();
+  startSlideTimer();
+  // tap anywhere to advance
+  document.getElementById('happy-slides').onclick=advanceSlide;
 }
 
-function buildLake(bg,sl){
-  const sunStyles={
-    sunset:'top:30%;left:50%;width:56px;height:56px;background:radial-gradient(circle,#fff5a0,#ffcc00,rgba(255,120,0,0.3));box-shadow:0 0 60px rgba(255,160,0,0.5);',
-    dusk:'top:62%;left:50%;width:38px;height:38px;background:radial-gradient(circle,#ffbbdd,#ff4488);box-shadow:0 0 50px rgba(255,40,140,0.4);',
-    dawn:'top:70%;left:50%;width:30px;height:30px;background:radial-gradient(circle,#c8e8ff,#6ab4ff);box-shadow:0 0 40px rgba(80,160,255,0.4);'
-  };
-  bg.innerHTML=`
-    <div style="position:absolute;border-radius:50%;transform:translateX(-50%);${sunStyles[sl.extra]}"></div>
-    <div class="lake-rip" style="width:110px;height:26px;bottom:22%;left:15%;animation-delay:0s;"></div>
-    <div class="lake-rip" style="width:80px;height:20px;bottom:50%;left:55%;animation-delay:2s;"></div>
-    <div class="lake-rip" style="width:140px;height:32px;bottom:35%;left:28%;animation-delay:3.5s;"></div>
-    <svg style="position:absolute;bottom:39%;left:0;right:0;width:100%;height:52px;" viewBox="0 0 430 52" fill="rgba(0,0,0,0.5)">
-      <rect x="8" y="14" width="11" height="38"/><rect x="26" y="4" width="15" height="48"/><rect x="48" y="0" width="19" height="52"/>
-      <rect x="75" y="10" width="13" height="42"/><rect x="97" y="20" width="10" height="32"/><rect x="116" y="2" width="21" height="50"/>
-      <rect x="146" y="12" width="16" height="40"/><rect x="172" y="18" width="11" height="34"/><rect x="192" y="6" width="17" height="46"/>
-      <rect x="218" y="0" width="21" height="52"/><rect x="248" y="14" width="13" height="38"/><rect x="270" y="22" width="10" height="30"/>
-      <rect x="290" y="8" width="17" height="44"/><rect x="316" y="16" width="11" height="36"/><rect x="336" y="4" width="19" height="48"/>
-      <rect x="364" y="18" width="12" height="34"/><rect x="386" y="10" width="15" height="42"/><rect x="410" y="20" width="9" height="32"/>
-    </svg>
-    <div style="position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.3));"></div>`;
+function buildDots(){
+  const dots=document.getElementById('happy-dots');dots.innerHTML='';
+  slides.forEach((_,i)=>{
+    const d=document.createElement('button');
+    d.className='happy-dot'+(i===0?' active':'');
+    d.onclick=e=>{e.stopPropagation();goSlide(i);};
+    dots.appendChild(d);
+  });
 }
 
-function buildCathedral(bg,sl){
-  bg.innerHTML=`
-    <div style="position:absolute;top:0;left:0;right:0;height:60%;background:radial-gradient(ellipse at 50% 0%,${sl.color}33,transparent 70%);"></div>
-    <div style="position:absolute;top:6%;left:50%;transform:translateX(-50%);">
-      <div style="width:64px;height:95px;border-radius:32px 32px 0 0;border:1.5px solid ${sl.color}66;background:linear-gradient(180deg,${sl.color}18,transparent);margin:0 auto;box-shadow:0 0 30px ${sl.color}33;"></div>
-      <div style="text-align:center;font-size:16px;color:${sl.color}99;margin-top:6px;">✝</div>
-    </div>
-    <div class="cath-candles">
-      ${[0,1,2,3,4].map(()=>`<div class="cath-cv"><div class="cath-cf"></div><div class="cath-cb"></div></div>`).join('')}
-    </div>
-    <div style="position:absolute;bottom:0;left:0;right:0;height:25%;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.4));"></div>`;
+function updateCaption(){
+  const s=slides[happyIdx];
+  document.getElementById('happy-caption-title').textContent=s.title;
+  document.getElementById('happy-caption-sub').textContent=s.sub;
+  document.querySelectorAll('.happy-dot').forEach((d,i)=>d.classList.toggle('active',i===happyIdx));
+  document.querySelectorAll('.happy-slide').forEach((d,i)=>d.classList.toggle('active',i===happyIdx));
 }
 
-function buildRainbow(bg,sl){
-  bg.innerHTML=`
-    <svg style="position:absolute;top:0;left:0;width:100%;height:75%;" viewBox="0 0 430 340" fill="none">
-      <path d="M-20 320 Q215 -100 450 320" stroke="#ff4444" stroke-width="18" fill="none" opacity="0.75"/>
-      <path d="M-10 320 Q215 -76 440 320" stroke="#ff7700" stroke-width="17" fill="none" opacity="0.75"/>
-      <path d="M0 320 Q215 -52 430 320" stroke="#ffcc00" stroke-width="16" fill="none" opacity="0.75"/>
-      <path d="M10 320 Q215 -28 420 320" stroke="#44cc44" stroke-width="16" fill="none" opacity="0.75"/>
-      <path d="M20 320 Q215 -4 410 320" stroke="#4488ff" stroke-width="15" fill="none" opacity="0.75"/>
-      <path d="M30 320 Q215 20 400 320" stroke="#8844ff" stroke-width="14" fill="none" opacity="0.75"/>
-      <path d="M40 320 Q215 44 390 320" stroke="#ff44cc" stroke-width="13" fill="none" opacity="0.6"/>
-    </svg>
-    <div style="position:absolute;bottom:32%;right:14%;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle,#fff9c4,#ffdd44,rgba(255,200,0,0.2));box-shadow:0 0 45px rgba(255,210,0,0.5);animation:sburst 3s ease-out forwards;"></div>
-    <div style="position:absolute;bottom:0;left:0;right:0;height:35%;background:linear-gradient(180deg,rgba(20,40,10,0.3),rgba(10,20,5,0.6));"></div>
-    <div id="rb-rain-wrap"></div>`;
-  if(sl.rain){
-    const wrap=bg.querySelector('#rb-rain-wrap');
-    rainInt=setInterval(()=>{
-      const d=document.createElement('div');d.className='rb-drop';
-      d.style.left=Math.random()*100+'%';d.style.height=(Math.random()*16+8)+'px';
-      d.style.animationDuration=(Math.random()*0.5+0.7)+'s';
-      wrap.appendChild(d);setTimeout(()=>d.remove(),1800);
-    },55);
-  }
-}
+function goSlide(i){happyIdx=i;updateCaption();resetSlideTimer();}
+function advanceSlide(){happyIdx=(happyIdx+1)%slides.length;updateCaption();resetSlideTimer();}
 
-function buildYorkie(bg,sl){
-  bg.innerHTML=`
-    <div class="yk-photo" style="background-image:url('${sl.photo}');position:absolute;inset:0;background-size:cover;background-position:center top;"></div>
-    <div class="yk-overlay"></div>
-    <div class="yk-warm"></div>
-    <div class="yk-cap">
-      <div class="yk-icon">${sl.icon}</div>
-      <div class="yk-name">Lady Ginger</div>
-      <div class="yk-sub-txt">${sl.sub}</div>
-    </div>
-    <div class="yk-ht" style="left:25%;bottom:52%;animation-delay:0s;">💛</div>
-    <div class="yk-ht" style="left:64%;bottom:48%;animation-delay:2s;">🤍</div>
-    <div class="yk-ht" style="left:45%;bottom:44%;animation-delay:4s;">💛</div>`;
+function startSlideTimer(){
+  clearInterval(happyTimer);
+  happyTimer=setInterval(()=>{happyIdx=(happyIdx+1)%slides.length;updateCaption();},8000);
 }
+function resetSlideTimer(){clearInterval(happyTimer);startSlideTimer();}
 
-function closeScene(){
-  clearInterval(rainInt);
-  document.getElementById('scene-overlay').classList.remove('show');
-  document.getElementById('scene-bg').innerHTML='';
-  document.getElementById('scene-bg').style.background='';
-  curScene=null;
+function closeHappy(){
+  clearInterval(happyTimer);happyRunning=false;
+  show('home');
 }
-window.closeScene=closeScene;
+window.closeHappy=closeHappy;
 </script>
 </body>
 </html>
