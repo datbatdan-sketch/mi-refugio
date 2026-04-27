@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a0533">
+<title>Mi Refugio v6</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+#app{width:100%;max-width:430px;height:100vh;margin:0 auto;position:relative;overflow:hidden;background:#1a0533;}
+.screen{display:none;flex-direction:column;height:100vh;overflow:hidden;color:#ffffff;}
+.screen.active{display:flex;}
+
+/* TOAST */
+#toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(255,200,0,0.2);border:1px solid rgba(255,200,0,0.4);color:#ffe580;padding:12px 24px;border-radius:50px;font-size:14px;pointer-events:none;opacity:0;transition:opacity 0.4s;z-index:999;white-space:nowrap;}
+#toast.show{opacity:1;}
+
+/* HUG OVERLAY */
+#hug-overlay{position:fixed;inset:0;z-index:900;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,6,0,0.97);}
+#hug-overlay.show{display:flex;}
+.ov-rainbow{width:100%;height:220px;position:absolute;top:0;opacity:0;transition:opacity 1.2s;pointer-events:none;}
+.ov-rainbow.show{opacity:1;}
+.ov-orb{width:160px;height:160px;border-radius:50%;background:rgba(255,200,0,0.18);border:2px solid rgba(255,200,0,0.4);display:flex;align-items:center;justify-content:center;font-size:64px;margin-bottom:28px;animation:hugPulse 1.8s ease-in-out infinite;}
+@keyframes hugPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.07);box-shadow:0 0 0 24px rgba(255,200,0,0);}}
+.ov-title{font-size:24px;color:#ffe580;font-weight:500;text-align:center;margin-bottom:10px;}
+.ov-msg{font-size:15px;color:rgba(255,200,100,0.7);text-align:center;max-width:280px;line-height:1.7;}
+.ov-close{margin-top:40px;background:rgba(255,200,0,0.12);border:1px solid rgba(255,200,0,0.3);color:#ffe580;padding:13px 40px;border-radius:50px;font-size:15px;cursor:pointer;font-family:inherit;}
+
+/* SHARED HEADER */
+.scr-hdr{display:flex;align-items:center;gap:12px;padding:20px 20px 0;flex-shrink:0;}
+.back-btn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;font-family:inherit;flex-shrink:0;}
+.scr-title{font-size:18px;color:#fff;font-weight:500;}
+
+/* ── HOME ── */
+#screen-home{background:#1a0533;}
+#screen-home .scrollable{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.home-hero{background:linear-gradient(180deg,#0d1b4b,#1a0a3d,#2d1050);padding:56px 24px 36px;position:relative;overflow:hidden;text-align:center;}
+.hero-rb{position:absolute;top:30px;left:50%;transform:translateX(-50%);width:340px;height:170px;opacity:0.3;pointer-events:none;}
+.hero-eyebrow{font-size:10px;letter-spacing:3px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:6px;position:relative;}
+.hero-name{font-size:34px;font-weight:500;color:#fff;position:relative;}
+.hero-sub{font-size:13px;color:rgba(255,255,255,0.5);margin-top:4px;position:relative;}
+.hero-btn{margin-top:36px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.25);color:#fff;font-size:17px;padding:17px 44px;border-radius:50px;cursor:pointer;font-family:inherit;position:relative;}
+.hug-banner{margin:16px 16px 0;background:linear-gradient(135deg,rgba(255,200,0,0.15),rgba(255,100,180,0.1));border:1px solid rgba(255,200,80,0.3);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.hug-dot{width:40px;height:40px;border-radius:50%;background:rgba(255,200,0,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.hug-lbl{font-size:13px;color:#fff;font-weight:500;}
+.hug-sub{font-size:11px;color:rgba(255,200,100,0.7);margin-top:2px;}
+.hug-ind{width:10px;height:10px;border-radius:50%;background:rgba(255,200,0,0.3);border:1.5px solid rgba(255,200,0,0.5);flex-shrink:0;display:none;margin-left:auto;}
+.hug-ind.live{background:#ffc800;display:block;box-shadow:0 0 6px rgba(255,200,0,0.6);}
+.hug-arr{color:rgba(255,200,80,0.5);font-size:20px;margin-left:auto;}
+.nav-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;}
+.nav-card{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:18px;padding:18px 16px;cursor:pointer;text-align:left;font-family:inherit;}
+.nav-icon{font-size:22px;margin-bottom:10px;display:block;}
+.nav-label{font-size:14px;color:#fff;font-weight:500;}
+.nav-sub{font-size:11px;color:rgba(255,255,255,0.45);margin-top:3px;}
+.footer{text-align:center;font-size:11px;color:rgba(255,255,255,0.2);padding:16px 0 28px;}
+
+/* ── BREATHE ── */
+#screen-breathe{background:linear-gradient(180deg,#041d3a,#062844,#0a3854);}
+.breathe-body{flex:1;display:flex;flex-direction:column;align-items:center;padding:20px 24px 32px;}
+.b-wrap{position:relative;width:210px;height:210px;display:flex;align-items:center;justify-content:center;margin:28px auto 24px;}
+.b-ring{position:absolute;border-radius:50%;border:1.5px solid rgba(100,200,255,0.3);animation:bRing 5s ease-in-out infinite;}
+.b-ring-1{width:210px;height:210px;}
+.b-ring-2{width:170px;height:170px;animation-delay:0.25s;opacity:0.6;}
+@keyframes bRing{0%,100%{transform:scale(1);opacity:0.4;}50%{transform:scale(1.1);opacity:0.8;}}
+.b-core{width:116px;height:116px;border-radius:50%;background:rgba(64,180,255,0.18);border:1.5px solid rgba(100,210,255,0.45);display:flex;align-items:center;justify-content:center;animation:bCore 5s ease-in-out infinite;}
+@keyframes bCore{0%,100%{transform:scale(1);}50%{transform:scale(1.22);background:rgba(64,180,255,0.32);}}
+.b-word{font-size:14px;color:rgba(200,240,255,0.9);font-weight:500;text-align:center;line-height:1.4;}
+.b-phase{font-size:20px;color:rgba(200,240,255,0.9);font-weight:500;text-align:center;}
+.b-count{font-size:52px;color:#fff;font-weight:300;text-align:center;margin-top:4px;line-height:1;}
+.b-msg{font-size:13px;color:rgba(200,240,255,0.55);text-align:center;margin-top:18px;line-height:1.7;max-width:240px;}
+.b-ctrl{margin-top:28px;background:rgba(100,210,255,0.15);border:1px solid rgba(100,210,255,0.3);color:rgba(200,240,255,0.9);padding:13px 40px;border-radius:50px;font-size:15px;cursor:pointer;font-family:inherit;}
+
+/* ── DAILY POSITIVITY ── */
+#screen-daily{background:linear-gradient(180deg,#1a0a3d,#2a1060,#1a0a3d);}
+.daily-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 18px 40px;display:flex;flex-direction:column;gap:16px;}
+.daily-date{font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.6);text-transform:uppercase;text-align:center;}
+.colour-card{display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:18px;}
+.colour-swatch{width:56px;height:56px;border-radius:16px;flex-shrink:0;}
+.colour-name{font-size:17px;color:#fff;font-weight:700;margin-bottom:5px;}
+.colour-meaning{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.5;}
+.d-card{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:22px 18px;}
+.d-card-lbl{font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-bottom:12px;display:block;}
+.d-card-txt{font-size:17px;color:#fff;line-height:1.75;font-weight:500;display:block;}
+.d-refresh{background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:inherit;text-align:center;padding:8px;display:block;width:100%;}
+
+/* ── AFFIRMATIONS ── */
+#screen-affirm{background:linear-gradient(180deg,#001a10,#003820);}
+.affirm-body{flex:1;display:flex;flex-direction:column;padding:16px 20px 32px;}
+.affirm-bar{height:4px;border-radius:2px;background:linear-gradient(90deg,#ff4444,#ff8800,#ffcc00,#44cc44,#4488ff,#8844ff,#ff44cc);opacity:0.7;margin-bottom:24px;flex-shrink:0;}
+.affirm-card{flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(100,255,150,0.2);border-radius:22px;padding:32px 22px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+.a-icon{font-size:38px;margin-bottom:20px;}
+.a-quote{font-size:19px;color:#fff;line-height:1.65;font-weight:500;}
+.a-src{font-size:11px;color:rgba(140,255,170,0.5);margin-top:14px;letter-spacing:1px;}
+.affirm-nav{display:flex;gap:12px;margin-top:20px;align-items:center;flex-shrink:0;}
+.a-btn{flex:1;background:rgba(100,255,150,0.1);border:1px solid rgba(100,255,150,0.25);color:rgba(180,255,200,0.9);padding:12px 0;border-radius:50px;font-size:14px;cursor:pointer;font-family:inherit;}
+.a-fav{background:rgba(255,200,0,0.1);border:1px solid rgba(255,200,0,0.25);color:rgba(255,220,100,0.9);padding:12px 18px;border-radius:50px;font-size:16px;cursor:pointer;font-family:inherit;}
+
+/* ── HUG ── */
+#screen-hug{background:linear-gradient(180deg,#0d0a00,#1a1200);}
+.hug-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;}
+.hug-badge{font-size:11px;color:rgba(255,200,80,0.6);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px;}
+.hug-orb{width:150px;height:150px;border-radius:50%;background:rgba(255,200,0,0.15);border:2px solid rgba(255,200,0,0.3);display:flex;align-items:center;justify-content:center;font-size:58px;cursor:pointer;margin:0 auto 28px;animation:orbWait 3s ease-in-out infinite;}
+@keyframes orbWait{0%,100%{opacity:0.7;}50%{opacity:1;}}
+.hug-title{font-size:22px;color:#ffe580;font-weight:500;margin-bottom:8px;}
+.hug-desc{font-size:14px;color:rgba(255,200,100,0.6);line-height:1.7;max-width:260px;margin:0 auto;}
+.hug-div{width:40px;height:1px;background:rgba(255,200,0,0.2);margin:24px auto;}
+.hug-send-lbl{font-size:11px;color:rgba(255,200,80,0.45);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;}
+.hug-send-btn{background:rgba(255,200,0,0.15);border:1.5px solid rgba(255,200,0,0.3);color:#ffe580;padding:15px 44px;border-radius:50px;font-size:16px;cursor:pointer;font-family:inherit;}
+.hug-sent{font-size:13px;color:rgba(255,200,80,0.5);margin-top:14px;min-height:20px;}
+
+/* ── HAPPY PLACE ── */
+#screen-happy{background:linear-gradient(180deg,#001428,#00233d);}
+.happy-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 32px;}
+.happy-sub{font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:16px;padding-left:4px;}
+.place-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.place-card{border-radius:20px;padding:14px;height:140px;display:flex;flex-direction:column;justify-content:flex-end;cursor:pointer;font-family:inherit;transition:transform 0.15s;position:relative;overflow:hidden;border:none;}
+.place-card:active{transform:scale(0.97);}
+.p-lbl{font-size:13px;color:#fff;font-weight:700;position:relative;z-index:2;text-shadow:0 1px 6px rgba(0,0,0,0.6);}
+.p-sub{font-size:10px;color:rgba(255,255,255,0.7);margin-top:2px;position:relative;z-index:2;}
+.card-lake{background:linear-gradient(160deg,#0a1628,#1a5080,#ff8c3a);}
+.card-cathedral{background:linear-gradient(160deg,#080510,#1e1030,#2a1840);}
+.card-rainbow{background:linear-gradient(160deg,#060418,#1a1050,#ff44cc,#ffcc00);}
+.card-yorkie{background:#2a1500;position:relative;}
+.card-yorkie .yk-img{position:absolute;inset:0;background-image:url('https://i.ibb.co/NnpsrByX/PHOTO-2026-03-29-20-58-27.jpg');background-size:cover;background-position:center top;border-radius:20px;}
+.card-yorkie .yk-grad{position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(0,0,0,0.6));border-radius:20px;}
+
+/* SCENE OVERLAY */
+#scene-overlay{position:fixed;inset:0;z-index:800;display:none;flex-direction:column;}
+#scene-overlay.show{display:flex;}
+.scene-bg{position:absolute;inset:0;}
+.scene-back{position:absolute;top:20px;left:20px;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.2);color:#fff;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;font-family:inherit;z-index:10;}
+.scene-dots{position:absolute;bottom:96px;left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:10;}
+.s-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.3);cursor:pointer;border:none;transition:all 0.3s;}
+.s-dot.active{background:#fff;transform:scale(1.2);}
+.scene-footer{position:absolute;bottom:0;left:0;right:0;padding:20px 32px 36px;z-index:10;text-align:center;}
+.scene-title-txt{font-size:20px;color:#fff;font-weight:700;text-shadow:0 2px 12px rgba(0,0,0,0.6);}
+.scene-sub-txt{font-size:13px;color:rgba(255,255,255,0.6);margin-top:6px;}
+.scene-tap-txt{font-size:11px;color:rgba(255,255,255,0.25);margin-top:10px;}
+
+/* LAKE */
+.lake-s{position:absolute;inset:0;}
+.lake-rip{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,0.12);animation:rp 5s ease-out infinite;}
+@keyframes rp{0%{transform:scale(1);opacity:0.45;}100%{transform:scale(2.4);opacity:0;}}
+
+/* CATHEDRAL */
+.cath-s{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.cath-candles{position:absolute;bottom:22%;left:0;right:0;display:flex;justify-content:center;gap:24px;z-index:2;}
+.cath-cv{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.cath-cf{width:10px;height:16px;border-radius:50% 50% 30% 30%;background:radial-gradient(ellipse at 50% 80%,#fff9c4,#ffaa00,rgba(255,60,0,0));animation:cff 1.3s ease-in-out infinite alternate;transform-origin:bottom;}
+.cath-cf:nth-child(odd){animation-delay:0.3s;}
+@keyframes cff{0%{transform:scaleX(1) rotate(-2deg);}100%{transform:scaleX(0.82) scaleY(1.1) rotate(2deg);}}
+.cath-cb{width:7px;height:44px;background:linear-gradient(180deg,#ffe8a0,#c89830);border-radius:2px;}
+
+/* RAINBOW */
+.rb-s{position:absolute;inset:0;}
+.rb-drop{position:absolute;width:1px;background:linear-gradient(180deg,transparent,rgba(180,220,255,0.4));animation:rfall linear infinite;}
+@keyframes rfall{0%{top:-20px;opacity:0.6;}100%{top:110%;opacity:0;}}
+
+/* YORKIE */
+.yk-s{position:absolute;inset:0;}
+.yk-photo{position:absolute;inset:0;background-size:cover;background-position:center top;}
+.yk-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.0) 40%,rgba(0,0,0,0.55) 100%);}
+.yk-warm{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(255,140,0,0.12),transparent 65%);}
+.yk-cap{position:absolute;top:24px;left:0;right:0;text-align:center;}
+.yk-icon{font-size:22px;}
+.yk-name{font-size:24px;color:#fff;font-weight:700;text-shadow:0 2px 12px rgba(0,0,0,0.8);}
+.yk-sub-txt{font-size:12px;color:rgba(255,255,255,0.7);margin-top:3px;text-shadow:0 1px 6px rgba(0,0,0,0.8);}
+.yk-ht{position:absolute;font-size:22px;animation:htUp 5s ease-in infinite;z-index:5;}
+@keyframes htUp{0%{opacity:0;transform:translateY(0) scale(0.5);}20%{opacity:1;}100%{opacity:0;transform:translateY(-200px) scale(1.1);}}
+@keyframes sburst{0%{opacity:0;transform:scale(0.4);}100%{opacity:1;transform:scale(1);}}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="toast"></div>
+
+<!-- HUG OVERLAY -->
+<div id="hug-overlay">
+  <svg class="ov-rainbow" id="ov-rainbow" viewBox="0 0 430 220" fill="none">
+    <path d="M-10 210 Q215 -70 440 210" stroke="#ff4444" stroke-width="14" fill="none" opacity="0.55"/>
+    <path d="M0 210 Q215 -50 430 210" stroke="#ff8800" stroke-width="13" fill="none" opacity="0.55"/>
+    <path d="M10 210 Q215 -28 420 210" stroke="#ffcc00" stroke-width="13" fill="none" opacity="0.55"/>
+    <path d="M20 210 Q215 -6 410 210" stroke="#44cc44" stroke-width="12" fill="none" opacity="0.55"/>
+    <path d="M30 210 Q215 14 400 210" stroke="#4488ff" stroke-width="12" fill="none" opacity="0.55"/>
+    <path d="M40 210 Q215 34 390 210" stroke="#8844ff" stroke-width="11" fill="none" opacity="0.55"/>
+  </svg>
+  <div class="ov-orb">💛</div>
+  <div class="ov-title">Someone is thinking of you</div>
+  <div class="ov-msg">Right now, in this moment, you are loved. You are not alone. 💛</div>
+  <button class="ov-close" onclick="closeOverlay()">I feel it ✨</button>
+</div>
+
+<!-- SCENE OVERLAY -->
+<div id="scene-overlay">
+  <div id="scene-bg" class="scene-bg"></div>
+  <button class="scene-back" onclick="closeScene()">‹</button>
+  <div class="scene-dots" id="scene-dots"></div>
+  <div class="scene-footer">
+    <div class="scene-title-txt" id="scene-title"></div>
+    <div class="scene-sub-txt" id="scene-sub"></div>
+    <div class="scene-tap-txt">Tap anywhere to cycle scenes</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="scrollable">
+    <div class="home-hero">
+      <svg class="hero-rb" viewBox="0 0 340 170" fill="none">
+        <path d="M10 160 Q170 -20 330 160" stroke="#ff4444" stroke-width="8" fill="none" opacity="0.7"/>
+        <path d="M20 160 Q170 0 320 160" stroke="#ff8800" stroke-width="8" fill="none" opacity="0.7"/>
+        <path d="M30 160 Q170 20 310 160" stroke="#ffcc00" stroke-width="8" fill="none" opacity="0.7"/>
+        <path d="M40 160 Q170 38 300 160" stroke="#44cc44" stroke-width="8" fill="none" opacity="0.7"/>
+        <path d="M50 160 Q170 54 290 160" stroke="#4488ff" stroke-width="8" fill="none" opacity="0.7"/>
+        <path d="M60 160 Q170 68 280 160" stroke="#8844ff" stroke-width="7" fill="none" opacity="0.7"/>
+      </svg>
+      <div class="hero-eyebrow">Tu lugar seguro</div>
+      <div class="hero-name">Hola, Araceli</div>
+      <div class="hero-sub">You are stronger than you know</div>
+      <button class="hero-btn" onclick="show('breathe')">I need a moment</button>
+    </div>
+    <div class="hug-banner" onclick="show('hug')">
+      <div class="hug-dot">💛</div>
+      <div style="flex:1;">
+        <div class="hug-lbl">Dan's hug</div>
+        <div class="hug-sub" id="hug-status-home">Tap to feel it — or send one back</div>
+      </div>
+      <div class="hug-ind" id="hug-indicator"></div>
+      <div class="hug-arr">›</div>
+    </div>
+    <div class="nav-grid">
+      <button class="nav-card" onclick="show('breathe')"><span class="nav-icon">🌊</span><div class="nav-label">Breathe with me</div><div class="nav-sub">Calm your body</div></button>
+      <button class="nav-card" onclick="show('daily')"><span class="nav-icon">🌅</span><div class="nav-label">Daily positivity</div><div class="nav-sub">Your word for today</div></button>
+      <button class="nav-card" onclick="show('affirm')"><span class="nav-icon">🌈</span><div class="nav-label">Good thoughts</div><div class="nav-sub">Words of light</div></button>
+      <button class="nav-card" onclick="show('happy')"><span class="nav-icon">🏞</span><div class="nav-label">My happy place</div><div class="nav-sub">Escape & reset</div></button>
+    </div>
+    <div class="footer">Mi Refugio · made with love</div>
+  </div>
+</div>
+
+<!-- BREATHE -->
+<div class="screen" id="screen-breathe">
+  <div class="scr-hdr"><button class="back-btn" onclick="show('home')">‹</button><span class="scr-title">Breathe with me</span></div>
+  <div class="breathe-body">
+    <div class="b-wrap">
+      <div class="b-ring b-ring-1"></div><div class="b-ring b-ring-2"></div>
+      <div class="b-core"><div class="b-word" id="bw">Breathe<br>in</div></div>
+    </div>
+    <div class="b-phase" id="bp">Inhale</div>
+    <div class="b-count" id="bc">4</div>
+    <div class="b-msg">Let your body soften.<br>You are safe. You are here.<br>God is with you.</div>
+    <button class="b-ctrl" id="bctrl" onclick="toggleBreathe()">Begin</button>
+  </div>
+</div>
+
+<!-- DAILY POSITIVITY -->
+<div class="screen" id="screen-daily">
+  <div class="scr-hdr"><button class="back-btn" onclick="show('home')">‹</button><span class="scr-title">Your word for today</span></div>
+  <div class="daily-body">
+    <div class="daily-date" id="daily-date"></div>
+    <div class="colour-card">
+      <div class="colour-swatch" id="colour-swatch" style="width:56px;height:56px;border-radius:16px;flex-shrink:0;"></div>
+      <div>
+        <div class="colour-name" id="colour-name"></div>
+        <div class="colour-meaning" id="colour-meaning"></div>
+      </div>
+    </div>
+    <div class="d-card">
+      <span class="d-card-lbl">Today's affirmation</span>
+      <span class="d-card-txt" id="daily-affirm"></span>
+    </div>
+    <div class="d-card">
+      <span class="d-card-lbl">Today's intention</span>
+      <span class="d-card-txt" id="daily-intention"></span>
+    </div>
+    <button class="d-refresh" onclick="loadDaily()">✦ Refresh</button>
+  </div>
+</div>
+
+<!-- AFFIRMATIONS -->
+<div class="screen" id="screen-affirm">
+  <div class="scr-hdr"><button class="back-btn" onclick="show('home')">‹</button><span class="scr-title">Good thoughts</span></div>
+  <div class="affirm-body">
+    <div class="affirm-bar"></div>
+    <div class="affirm-card">
+      <div class="a-icon" id="a-icon">🌈</div>
+      <div class="a-quote" id="a-quote"></div>
+      <div class="a-src" id="a-src"></div>
+    </div>
+    <div class="affirm-nav">
+      <button class="a-btn" onclick="prevA()">← Prev</button>
+      <button class="a-fav" id="a-fav" onclick="toggleFav()">♡</button>
+      <button class="a-btn" onclick="nextA()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- HUG -->
+<div class="screen" id="screen-hug">
+  <div class="scr-hdr"><button class="back-btn" onclick="show('home')">‹</button><span class="scr-title">Dan's hug</span></div>
+  <div class="hug-body">
+    <div class="hug-badge">Live connection 🟡</div>
+    <div class="hug-orb" onclick="triggerHugEffect()">💛</div>
+    <div class="hug-title">Waiting for a hug</div>
+    <div class="hug-desc">When Dan sends one, this light will glow and a rainbow will appear.</div>
+    <div class="hug-div"></div>
+    <div class="hug-send-lbl">Send one back</div>
+    <button class="hug-send-btn" onclick="sendHug()">Send Dan a hug 💛</button>
+    <div class="hug-sent" id="hug-sent"></div>
+  </div>
+</div>
+
+<!-- HAPPY PLACE -->
+<div class="screen" id="screen-happy">
+  <div class="scr-hdr"><button class="back-btn" onclick="show('home')">‹</button><span class="scr-title">My happy place</span></div>
+  <div class="happy-body">
+    <div class="happy-sub">Tap a scene · tap again to cycle</div>
+    <div class="place-grid">
+      <button class="place-card card-lake" onclick="openScene('lake')">
+        <div><div class="p-lbl">🌊 Lake Michigan</div><div class="p-sub">Waves & golden hour</div></div>
+      </button>
+      <button class="place-card card-cathedral" onclick="openScene('cathedral')">
+        <div><div class="p-lbl">🏛 Cathedral</div><div class="p-sub">Stillness & light</div></div>
+      </button>
+      <button class="place-card card-rainbow" onclick="openScene('rainbow')">
+        <svg style="position:absolute;inset:0;width:100%;height:100%;" viewBox="0 0 160 140" fill="none">
+          <path d="M-5 135 Q80 -30 165 135" stroke="#ff4444" stroke-width="8" fill="none" opacity="0.6"/>
+          <path d="M0 135 Q80 -18 160 135" stroke="#ff8800" stroke-width="7" fill="none" opacity="0.6"/>
+          <path d="M5 135 Q80 -6 155 135" stroke="#ffcc00" stroke-width="7" fill="none" opacity="0.6"/>
+          <path d="M10 135 Q80 6 150 135" stroke="#44cc44" stroke-width="6" fill="none" opacity="0.6"/>
+          <path d="M15 135 Q80 18 145 135" stroke="#4488ff" stroke-width="6" fill="none" opacity="0.6"/>
+          <path d="M20 135 Q80 30 140 135" stroke="#8844ff" stroke-width="5" fill="none" opacity="0.6"/>
+        </svg>
+        <div><div class="p-lbl">🌈 Rainbow sky</div><div class="p-sub">After every storm</div></div>
+      </button>
+      <button class="place-card card-yorkie" onclick="openScene('yorkie')">
+        <div class="yk-img"></div><div class="yk-grad"></div>
+        <div><div class="p-lbl">🐾 Lady Ginger</div><div class="p-sub">Your little love</div></div>
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getDatabase,ref,set,onValue}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+const cfg={apiKey:"AIzaSyCQfL3pLc89_ch5qR1U0WX-0e-ayh3VW5E",authDomain:"mi-refigio.firebaseapp.com",databaseURL:"https://mi-refigio-default-rtdb.firebaseio.com",projectId:"mi-refigio",storageBucket:"mi-refigio.firebasestorage.app",messagingSenderId:"486291568383",appId:"1:486291568383:web:65b20cd8d51bdeb7483eca"};
+const fbApp=initializeApp(cfg);const db=getDatabase(fbApp);
+let lastHug=0;
+onValue(ref(db,'hugs/dan-to-araceli'),snap=>{const v=snap.val();if(!v||!v.ts)return;if(v.ts>lastHug){lastHug=v.ts;showIncomingHug();}});
+window.sendHug=async()=>{try{await set(ref(db,'hugs/araceli-to-dan'),{ts:Date.now(),from:'araceli'});const l=document.getElementById('hug-sent');l.textContent='Your hug is on its way ✨';setTimeout(()=>l.textContent='',3500);}catch(e){}};
+function showIncomingHug(){document.getElementById('hug-overlay').classList.add('show');setTimeout(()=>document.getElementById('ov-rainbow').classList.add('show'),300);document.getElementById('hug-indicator').classList.add('live');document.getElementById('hug-status-home').textContent='Dan just sent you a hug 💛';setTimeout(()=>{document.getElementById('hug-indicator').classList.remove('live');document.getElementById('hug-status-home').textContent='Tap to feel it — or send one back';},10000);}
+window.closeOverlay=()=>{document.getElementById('hug-overlay').classList.remove('show');document.getElementById('ov-rainbow').classList.remove('show');};
+window.triggerHugEffect=()=>{document.getElementById('hug-overlay').classList.add('show');setTimeout(()=>document.getElementById('ov-rainbow').classList.add('show'),300);};
+</script>
+
+<script>
+// NAV
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');if(id==='breathe')initBreathe();if(id==='daily')loadDaily();if(id==='affirm')renderA();}
+window.show=show;
+
+// BREATHE
+const phases=[{n:'Inhale',w:'Breathe\nin',d:4},{n:'Hold',w:'Hold',d:4},{n:'Exhale',w:'Breathe\nout',d:6},{n:'Rest',w:'Rest',d:2}];
+let bRun=false,bT=null,bPh=0,bC=0;
+function initBreathe(){bRun=false;clearTimeout(bT);bPh=0;bC=phases[0].d;document.getElementById('bp').textContent=phases[0].n;document.getElementById('bc').textContent=phases[0].d;document.getElementById('bw').innerHTML=phases[0].w.replace('\n','<br>');document.getElementById('bctrl').textContent='Begin';}
+function toggleBreathe(){if(!bRun){bRun=true;document.getElementById('bctrl').textContent='Pause';runPh();}else{bRun=false;clearTimeout(bT);document.getElementById('bctrl').textContent='Resume';}}
+window.toggleBreathe=toggleBreathe;
+function runPh(){const p=phases[bPh];document.getElementById('bp').textContent=p.n;document.getElementById('bw').innerHTML=p.w.replace('\n','<br>');bC=p.d;tick();}
+function tick(){if(!bRun)return;document.getElementById('bc').textContent=bC;if(bC>0){bC--;bT=setTimeout(tick,1000);}else{bPh=(bPh+1)%phases.length;bT=setTimeout(runPh,150);}}
+
+// DAILY POSITIVITY
+const colours=[
+  {name:'Golden Amber',hex:'#ffb347',meaning:'Warmth, courage and light. Today you radiate it.'},
+  {name:'Sky Blue',hex:'#87ceeb',meaning:'Openness and calm. The sky always clears.'},
+  {name:'Rose Quartz',hex:'#f7a8b8',meaning:'Gentle love. For yourself first, then others.'},
+  {name:'Violet',hex:'#9b59b6',meaning:'Spiritual strength. You are held by something greater.'},
+  {name:'Jade Green',hex:'#4caf7d',meaning:'Growth and renewal. Something new is beginning.'},
+  {name:'Coral',hex:'#ff6b6b',meaning:'Vitality and joy. Your energy matters today.'},
+  {name:'Cobalt Blue',hex:'#1e5fa8',meaning:'Depth and steadiness. You are more anchored than you know.'},
+  {name:'Lavender',hex:'#c9a0dc',meaning:'Peace and softness. Rest is not weakness.'},
+  {name:'Sunrise Gold',hex:'#ffd700',meaning:'Hope and new beginnings. Every morning is a fresh start.'},
+  {name:'Teal',hex:'#2ab3b1',meaning:'Clarity and calm water. You can find stillness today.'},
+  {name:'Dusty Rose',hex:'#dcae96',meaning:'Compassion. For the world, and especially for yourself.'},
+  {name:'Indigo',hex:'#4b0082',meaning:'Intuition. Trust what you already know in your heart.'},
+  {name:'Peach',hex:'#ffcba4',meaning:'Warmth and comfort. You deserve gentleness today.'},
+  {name:'Forest Green',hex:'#2d6a4f',meaning:'Rootedness and strength. You are deeply grounded.'},
+  {name:'Soft White',hex:'#f0ebe0',meaning:'Simplicity and grace. Not everything needs to be complicated.'},
+  {name:'Burnt Orange',hex:'#cc5500',meaning:'Passion and resilience. You have more fire than you realise.'},
+  {name:'Periwinkle',hex:'#aaaaff',meaning:'Imagination and wonder. Look for the beauty today.'},
+  {name:'Champagne',hex:'#f7e7ce',meaning:'Celebration. You are worthy of good things.'},
+  {name:'Sage',hex:'#b2c9a3',meaning:'Wisdom and healing. You know more than you give yourself credit for.'},
+  {name:'Ruby',hex:'#cc2233',meaning:'Courage and heart. You have survived every hard day so far.'},
+  {name:'Cerulean',hex:'#007ba7',meaning:'Like water — peaceful, powerful, always moving forward.'},
+  {name:'Blush Pink',hex:'#ffb6c1',meaning:'Tenderness. The world is gentler when you are gentle with yourself.'},
+  {name:'Ochre',hex:'#cc7722',meaning:'Groundedness and warmth. Roots keep you standing.'},
+  {name:'Mint',hex:'#66dd88',meaning:'Fresh starts and light. Today is a new page.'},
+  {name:'Mauve',hex:'#cc99ee',meaning:'Quiet strength. You do not need to shout to be powerful.'},
+  {name:'Terracotta',hex:'#c66742',meaning:'Earthy and real. You are exactly where you need to be.'},
+  {name:'Ice Blue',hex:'#aaddff',meaning:'Stillness after the storm. Peace is coming.'},
+  {name:'Gold',hex:'#ffc200',meaning:'You are precious. Treat yourself accordingly today.'},
+  {name:'Plum',hex:'#8e4585',meaning:'Mystery and depth. There is more to you than anyone sees.'},
+  {name:'Emerald',hex:'#50c878',meaning:'Abundance and hope. Good things are growing, even now.'}
+];
+const dailyAffirmations=[
+  'I am not my anxiety. I am the stillness underneath it.',
+  'I have survived every storm that has come my way. My record is 100%.',
+  'I am worthy of peace, joy, and all the good things coming my way.',
+  'Like a rainbow, I only appear after rain. My struggles are making me beautiful.',
+  'I do not have to carry everything. I am allowed to put some things down.',
+  'I am strong enough to ask for help, and wise enough to accept it.',
+  'My body is doing its best for me today, and I am grateful for it.',
+  'I choose to see beauty today — in small things, in people, in myself.',
+  'I am not behind. I am exactly where I am meant to be.',
+  'The same God who made the rainbow made me. I am not a mistake.',
+  'I release what I cannot control and trust what I cannot see.',
+  'I am allowed to take up space. My presence is a gift.',
+  'Today I will be as kind to myself as I would be to someone I love.',
+  'I am rooted. Whatever wind comes, I will not be uprooted.',
+  'My courage is quiet sometimes, but it is always there.',
+  'I am more than my hardest days. I am also my laughter, my love, my light.',
+  'Peace is not something I find — it is something I choose.',
+  'I trust the unfolding. Not everything has to make sense right now.',
+  'I am someone who keeps going. That is not small. That is everything.',
+  'What I am going through is not what I am. I am so much more.',
+  'Today I give myself permission to just be — not to fix, not to prove, just to be.',
+  'I am loved in ways I do not always remember. But love is there.',
+  'My sensitivity is not weakness. It means I feel the world deeply — and that is a gift.',
+  'I do not need to be perfect to deserve good things.',
+  'Every breath I take is a second chance. I have so many second chances today.',
+  'I am becoming. Not finished, not broken — becoming.',
+  'The things that have tried to break me have only shown me how unbreakable I am.',
+  'I am allowed to rest. Rest is not giving up. Rest is how I keep going.',
+  'Today I will notice one beautiful thing and let it matter.',
+  'I am Araceli. And that is more than enough.'
+];
+const dailyIntentions=[
+  'Today I will pause before I react, and choose peace over panic.',
+  'Today I will notice one thing that made me smile and hold onto it.',
+  'Today I will drink water, breathe deeply, and be gentle with my body.',
+  'Today I will let one worry go — just one — and trust it will be okay.',
+  'Today I will speak to myself the way I would speak to my best friend.',
+  'Today I will find one moment of stillness, even if it is just a minute.',
+  'Today I will appreciate something small that I usually rush past.',
+  'Today I will not apologise for taking up space.',
+  'Today I will reach out to someone who makes me feel good.',
+  'Today I will do one thing just for me, with no guilt attached.',
+  'Today I will trust that I am enough — not someday, right now.',
+  'Today I will look for beauty, even in the ordinary.',
+  'Today I will choose to believe that things are working out for me.',
+  'Today I will be present in my body, not lost in my thoughts.',
+  'Today I will celebrate one small win, however tiny it seems.',
+  'Today I will let myself feel whatever I feel, without judging it.',
+  'Today I will remember that I am not alone, even when it feels that way.',
+  'Today I will say no to one thing that drains me.',
+  'Today I will say yes to one thing that fills me up.',
+  'Today I will be curious about my day instead of afraid of it.',
+  'Today I will treat my heart with the tenderness it deserves.',
+  'Today I will trust my instincts — they have carried me this far.',
+  'Today I will find one reason to be grateful, and really mean it.',
+  'Today I will remember that rest is productive. Healing is productive.',
+  'Today I will let love in — from others, from God, from myself.',
+  'Today I will take one deep breath whenever things feel too big.',
+  'Today I will give myself credit for showing up — that is always enough.',
+  'Today I will remember that rainbows only come after rain.',
+  'Today I will be a little kinder to the person in the mirror.',
+  'Today I will simply be here, alive, breathing — and that is a miracle.'
+];
+function loadDaily(){
+  const now=new Date();
+  const doy=Math.floor((now-new Date(now.getFullYear(),0,0))/(864e5));
+  const c=colours[doy%colours.length];
+  const af=dailyAffirmations[doy%dailyAffirmations.length];
+  const it=dailyIntentions[doy%dailyIntentions.length];
+  const sw=document.getElementById('colour-swatch');
+  sw.style.background=c.hex;
+  sw.style.boxShadow='0 4px 20px '+c.hex+'88';
+  document.getElementById('colour-name').textContent=c.name;
+  document.getElementById('colour-meaning').textContent=c.meaning;
+  document.getElementById('daily-affirm').textContent=af;
+  document.getElementById('daily-intention').textContent=it;
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('daily-date').textContent=days[now.getDay()]+' · '+months[now.getMonth()]+' '+now.getDate();
+}
+window.loadDaily=loadDaily;
+
+// AFFIRMATIONS
+const affirmations=[
+  {icon:'🌈',q:'"I am held by grace. What I cannot carry, God carries for me."',s:'Daily affirmation'},
+  {icon:'🌊',q:'"Like water, I am shaped by what surrounds me — and I always find my way."',s:'Words of peace'},
+  {icon:'📿',q:'"Cast all your anxiety on him, because he cares for you." — 1 Peter 5:7',s:'Scripture'},
+  {icon:'🐾',q:'"Joy lives in small things: a warm nose, a wagging tail, this present moment."',s:'Daily affirmation'},
+  {icon:'✨',q:'"I have survived every hard day so far. My record is 100%."',s:'Words of courage'},
+  {icon:'🌈',q:'"A rainbow only comes after rain. Every storm I face is making way for colour."',s:"Araceli's truth"},
+  {icon:'🏛',q:'"Beauty is everywhere — in stone, in light, in the sky above the city. I choose to see it."',s:'Daily affirmation'},
+  {icon:'🕊',q:'"Peace I leave with you; my peace I give you." — John 14:27',s:'Scripture'},
+  {icon:'💛',q:'"Someone out there loves me enough to build me a sanctuary. I am not alone."',s:'Your truth'},
+  {icon:'🌅',q:'"Each morning is a new mercy. Today I begin again."',s:'Daily affirmation'}
+];
+let aIdx=0;const favs=new Set();
+function renderA(){const a=affirmations[aIdx];document.getElementById('a-icon').textContent=a.icon;document.getElementById('a-quote').textContent=a.q;document.getElementById('a-src').textContent=a.s;document.getElementById('a-fav').textContent=favs.has(aIdx)?'♥':'♡';}
+function nextA(){aIdx=(aIdx+1)%affirmations.length;renderA();}
+function prevA(){aIdx=(aIdx-1+affirmations.length)%affirmations.length;renderA();}
+function toggleFav(){favs.has(aIdx)?favs.delete(aIdx):favs.add(aIdx);renderA();}
+window.nextA=nextA;window.prevA=prevA;window.toggleFav=toggleFav;
+
+// HAPPY PLACE SCENES
+const scenes={
+  lake:{title:'Lake Michigan',slides:[
+    {sub:'Golden hour — the city at peace',bg:'linear-gradient(180deg,#0a1628,#12306a,#c04a00,#ff8c2a)',extra:'sunset'},
+    {sub:'Purple dusk over the water',bg:'linear-gradient(180deg,#080620,#180840,#601860,#c03870)',extra:'dusk'},
+    {sub:'Still blue dawn, Chicago awakens',bg:'linear-gradient(180deg,#020408,#041020,#062848,#0a4a80)',extra:'dawn'}
+  ]},
+  cathedral:{title:'A cathedral at peace',slides:[
+    {sub:'Candlelight. Stillness. God is here.',bg:'linear-gradient(180deg,#060408,#120a04,#1e1206,#2a1a08)',color:'#c87820'},
+    {sub:'Sacred violet light through glass',bg:'linear-gradient(180deg,#040210,#0a0628,#180a48,#280e60)',color:'#9060e0'},
+    {sub:'Rose candlelight, a prayer for you',bg:'linear-gradient(180deg,#080010,#180028,#300044,#480060)',color:'#d040a0'}
+  ]},
+  rainbow:{title:'Rainbow sky',slides:[
+    {sub:'After every storm, colour returns',bg:'linear-gradient(180deg,#080c1a,#10204a,#1a4070,#3a6090)',rain:true},
+    {sub:'A promise written across the sky',bg:'linear-gradient(180deg,#100818,#281030,#482050,#703060)',rain:false},
+    {sub:'Light breaking through after the rain',bg:'linear-gradient(180deg,#0a0c08,#141e10,#224a1a,#3a7028)',rain:false}
+  ]},
+  yorkie:{title:'Lady Ginger 🐾',slides:[
+    {sub:'Your Yorkshire princess 👑',photo:'https://i.ibb.co/NnpsrByX/PHOTO-2026-03-29-20-58-27.jpg',icon:'👑'},
+    {sub:'Fashion icon — pink socks & all 🧦',photo:'https://i.ibb.co/97k7cc8/PHOTO-2025-10-08-18-53-52.jpg',icon:'🧦'},
+    {sub:'Easter shenanigans 🐰',photo:'https://i.ibb.co/QFjRPTpR/PHOTO-2025-07-06-22-02-04.jpg',icon:'🐰'}
+  ]}
+};
+let curScene=null,curSlide=0,rainInt=null;
+
+function openScene(id){
+  curScene=id;curSlide=0;
+  document.getElementById('scene-overlay').classList.add('show');
+  document.getElementById('scene-overlay').onclick=e=>{if(!e.target.closest('.scene-back')&&!e.target.closest('.s-dot'))nextSlide();};
+  renderScene();
+}
+window.openScene=openScene;
+
+function nextSlide(){clearInterval(rainInt);curSlide=(curSlide+1)%scenes[curScene].slides.length;renderScene();}
+
+function renderScene(){
+  clearInterval(rainInt);
+  const s=scenes[curScene];const sl=s.slides[curSlide];
+  const bg=document.getElementById('scene-bg');
+  bg.innerHTML='';bg.style.background=sl.bg||'#000';
+  document.getElementById('scene-title').textContent=s.title;
+  document.getElementById('scene-sub').textContent=sl.sub;
+  const dots=document.getElementById('scene-dots');dots.innerHTML='';
+  s.slides.forEach((_,i)=>{const d=document.createElement('button');d.className='s-dot'+(i===curSlide?' active':'');d.onclick=e=>{e.stopPropagation();curSlide=i;renderScene();};dots.appendChild(d);});
+  if(curScene==='lake') buildLake(bg,sl);
+  if(curScene==='cathedral') buildCathedral(bg,sl);
+  if(curScene==='rainbow') buildRainbow(bg,sl);
+  if(curScene==='yorkie') buildYorkie(bg,sl);
+}
+
+function buildLake(bg,sl){
+  const sunStyles={
+    sunset:'top:30%;left:50%;width:56px;height:56px;background:radial-gradient(circle,#fff5a0,#ffcc00,rgba(255,120,0,0.3));box-shadow:0 0 60px rgba(255,160,0,0.5);',
+    dusk:'top:62%;left:50%;width:38px;height:38px;background:radial-gradient(circle,#ffbbdd,#ff4488);box-shadow:0 0 50px rgba(255,40,140,0.4);',
+    dawn:'top:70%;left:50%;width:30px;height:30px;background:radial-gradient(circle,#c8e8ff,#6ab4ff);box-shadow:0 0 40px rgba(80,160,255,0.4);'
+  };
+  bg.innerHTML=`
+    <div style="position:absolute;border-radius:50%;transform:translateX(-50%);${sunStyles[sl.extra]}"></div>
+    <div class="lake-rip" style="width:110px;height:26px;bottom:22%;left:15%;animation-delay:0s;"></div>
+    <div class="lake-rip" style="width:80px;height:20px;bottom:50%;left:55%;animation-delay:2s;"></div>
+    <div class="lake-rip" style="width:140px;height:32px;bottom:35%;left:28%;animation-delay:3.5s;"></div>
+    <svg style="position:absolute;bottom:39%;left:0;right:0;width:100%;height:52px;" viewBox="0 0 430 52" fill="rgba(0,0,0,0.5)">
+      <rect x="8" y="14" width="11" height="38"/><rect x="26" y="4" width="15" height="48"/><rect x="48" y="0" width="19" height="52"/>
+      <rect x="75" y="10" width="13" height="42"/><rect x="97" y="20" width="10" height="32"/><rect x="116" y="2" width="21" height="50"/>
+      <rect x="146" y="12" width="16" height="40"/><rect x="172" y="18" width="11" height="34"/><rect x="192" y="6" width="17" height="46"/>
+      <rect x="218" y="0" width="21" height="52"/><rect x="248" y="14" width="13" height="38"/><rect x="270" y="22" width="10" height="30"/>
+      <rect x="290" y="8" width="17" height="44"/><rect x="316" y="16" width="11" height="36"/><rect x="336" y="4" width="19" height="48"/>
+      <rect x="364" y="18" width="12" height="34"/><rect x="386" y="10" width="15" height="42"/><rect x="410" y="20" width="9" height="32"/>
+    </svg>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.3));"></div>`;
+}
+
+function buildCathedral(bg,sl){
+  bg.innerHTML=`
+    <div style="position:absolute;top:0;left:0;right:0;height:60%;background:radial-gradient(ellipse at 50% 0%,${sl.color}33,transparent 70%);"></div>
+    <div style="position:absolute;top:6%;left:50%;transform:translateX(-50%);">
+      <div style="width:64px;height:95px;border-radius:32px 32px 0 0;border:1.5px solid ${sl.color}66;background:linear-gradient(180deg,${sl.color}18,transparent);margin:0 auto;box-shadow:0 0 30px ${sl.color}33;"></div>
+      <div style="text-align:center;font-size:16px;color:${sl.color}99;margin-top:6px;">✝</div>
+    </div>
+    <div class="cath-candles">
+      ${[0,1,2,3,4].map(()=>`<div class="cath-cv"><div class="cath-cf"></div><div class="cath-cb"></div></div>`).join('')}
+    </div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:25%;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.4));"></div>`;
+}
+
+function buildRainbow(bg,sl){
+  bg.innerHTML=`
+    <svg style="position:absolute;top:0;left:0;width:100%;height:75%;" viewBox="0 0 430 340" fill="none">
+      <path d="M-20 320 Q215 -100 450 320" stroke="#ff4444" stroke-width="18" fill="none" opacity="0.75"/>
+      <path d="M-10 320 Q215 -76 440 320" stroke="#ff7700" stroke-width="17" fill="none" opacity="0.75"/>
+      <path d="M0 320 Q215 -52 430 320" stroke="#ffcc00" stroke-width="16" fill="none" opacity="0.75"/>
+      <path d="M10 320 Q215 -28 420 320" stroke="#44cc44" stroke-width="16" fill="none" opacity="0.75"/>
+      <path d="M20 320 Q215 -4 410 320" stroke="#4488ff" stroke-width="15" fill="none" opacity="0.75"/>
+      <path d="M30 320 Q215 20 400 320" stroke="#8844ff" stroke-width="14" fill="none" opacity="0.75"/>
+      <path d="M40 320 Q215 44 390 320" stroke="#ff44cc" stroke-width="13" fill="none" opacity="0.6"/>
+    </svg>
+    <div style="position:absolute;bottom:32%;right:14%;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle,#fff9c4,#ffdd44,rgba(255,200,0,0.2));box-shadow:0 0 45px rgba(255,210,0,0.5);animation:sburst 3s ease-out forwards;"></div>
+    <div style="position:absolute;bottom:0;left:0;right:0;height:35%;background:linear-gradient(180deg,rgba(20,40,10,0.3),rgba(10,20,5,0.6));"></div>
+    <div id="rb-rain-wrap"></div>`;
+  if(sl.rain){
+    const wrap=bg.querySelector('#rb-rain-wrap');
+    rainInt=setInterval(()=>{
+      const d=document.createElement('div');d.className='rb-drop';
+      d.style.left=Math.random()*100+'%';d.style.height=(Math.random()*16+8)+'px';
+      d.style.animationDuration=(Math.random()*0.5+0.7)+'s';
+      wrap.appendChild(d);setTimeout(()=>d.remove(),1800);
+    },55);
+  }
+}
+
+function buildYorkie(bg,sl){
+  bg.innerHTML=`
+    <div class="yk-photo" style="background-image:url('${sl.photo}');position:absolute;inset:0;background-size:cover;background-position:center top;"></div>
+    <div class="yk-overlay"></div>
+    <div class="yk-warm"></div>
+    <div class="yk-cap">
+      <div class="yk-icon">${sl.icon}</div>
+      <div class="yk-name">Lady Ginger</div>
+      <div class="yk-sub-txt">${sl.sub}</div>
+    </div>
+    <div class="yk-ht" style="left:25%;bottom:52%;animation-delay:0s;">💛</div>
+    <div class="yk-ht" style="left:64%;bottom:48%;animation-delay:2s;">🤍</div>
+    <div class="yk-ht" style="left:45%;bottom:44%;animation-delay:4s;">💛</div>`;
+}
+
+function closeScene(){
+  clearInterval(rainInt);
+  document.getElementById('scene-overlay').classList.remove('show');
+  document.getElementById('scene-bg').innerHTML='';
+  document.getElementById('scene-bg').style.background='';
+  curScene=null;
+}
+window.closeScene=closeScene;
+</script>
+</body>
+</html>
